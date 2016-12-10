@@ -106,7 +106,7 @@ void rip::Udp::receive_loop() {
       std::string dest_ip = std::string(inet_ntoa(dest_addr.sin_addr));
       port_t dest_port = ntohs(dest_addr.sin_port);
 
-      std::string data = std::string(datagram);
+      std::string data = std::string(datagram, tot_len);
 
       for (auto it = _listeners.begin(); it != _listeners.end(); ++it) {
         (*it)(dest_ip, dest_port, data);
