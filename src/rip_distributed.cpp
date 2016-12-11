@@ -69,19 +69,46 @@ static void log(std::string message) {
     }
     // using DV algorithm
     for (auto it = table.begin(); it != table.end(); ++it) {
-      bool find = false;
-      for (auto jt = _table.begin(); jt != _table.end() && !find; ++jt) {
-        if (it->dest == jt->dest) {
-          find = true;
-          if (it->cost + 1 < jt->cost) {
-            jt->cost = it->cost + 1;
-            jt->next = source;
+
+      if (it->next != _localhost) {
+      // 当邻居的转发表中的 next 不为自身时才更新
+
+        bool find = false;
+        // 如果有距离更新，则更新转发表
+        for (auto jt = _table.begin(); jt != _table.end() && !find; ++jt) {
+          if (it->dest == jt->dest) {
+            find = true;
+            if (it->cost + 1 < jt->cost) {
+              jt->cost = it->cost + 1;
+              jt->next = source;
+            }
           }
         }
-      }
-      if (!find) {
-        _table.push_back(table_item(it->dest, source, it->cost + 1));
+        if (!find) { // 如果有新的节点，则加入转发表
+          _table.push_back(table_item(it->dest, source, it->cost + 1));
+        }
       }
     }
 
+    // 如果有某个转发项的 next 为 source，但是新的转发表中缺失，则判断失效
+    for (auto it = _table.begin(); it != _table.end();) {
+      if (it->next == source) {
+        bool find = false;
+        for (auto jt = table.begin(); jt != table.end() && !find; ++jt) {
+          if (it->dest == jt->dest) find = true;
+        }
+        if (!find) {
+          it = _table.erase(it);
+          continue;
+        }
+      }
+      ++it;
+    }
+
+    #ifdef DEBUG
+    log("current table:");
+    for (auto it = _table.begin(); it != _table.end(); ++it) {
+      log("|" + it->dest.to_string() + "\t|" + it->next.to_string() + "\t|" + std::to_string(it->cost) + "\t|");
+    }
+    #endif
   }

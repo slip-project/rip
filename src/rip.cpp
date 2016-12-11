@@ -20,6 +20,10 @@ bool rip::Rip::host_t::operator==(const host_t & other) const {
   return ip == other.ip && port == other.port;
 }
 
+bool rip::Rip::host_t::operator!=(const host_t & other) const {
+  return !operator==(other);
+}
+
 std::string rip::Rip::host_t::to_string() const {
   return Udp::stringify_ip(ip) + ":" + std::to_string(port);
 }
@@ -30,6 +34,7 @@ rip::Rip::table_item::table_item(host_t dd, host_t nn, int cc)
   : dest(dd), next(nn), cost(cc) {}
 
 rip::Rip::Rip(std::string ip, Udp::port_t port): _localhost(ip, port), _udp(port) {
+  _table.push_back(table_item(_localhost, _localhost, 0));
   schedule_sync();
   _udp.add_listener([=](Udp::ip_t source_ip, Udp::port_t source_port, std::string data)->void{
     solve_comming_message(source_ip, source_port, data);
@@ -58,9 +63,11 @@ void rip::Rip::schedule_sync() {
 
 void rip::Rip::solve_comming_message(Udp::ip_t source_ip, Udp::port_t source_port, std::string data) {
 
+  int header_len = sizeof(rip_header);
+
   host_t source_host(source_ip, source_port);
   rip_header rip_h(*((const rip_header*) data.data()));
-  std::string message = data.substr(sizeof(rip_header));
+  std::string message = data.substr(header_len);
 
   #ifdef DEBUG
   log("solve comming message from " + source_host.to_string()
@@ -133,16 +140,16 @@ void rip::Rip::update_neibor_timer(neibor_ptr neibor_p) {
 
 void rip::Rip::send_table(host_t host) {
   auto table_str = stringify_table(_table);
-  int tot_len = sizeof(rip_header) + table_str.size();
-  char *tmp = new char[tot_len];
 
-  memcpy(tmp, tmp + sizeof(rip_header), table_str.size());
+  int header_len = sizeof(rip_header);
+  char *tmp = new char[header_len];
+
   rip_header *rip_h = (rip_header*) tmp;
 
   rip_h->type = TABLE;
   rip_h->dest = host;
 
-  std::string data(tmp, tot_len);
+  std::string data = std::string(tmp, header_len) + table_str;
   delete[] tmp;
 
   _udp.send(host.ip, host.port, data);
@@ -195,7 +202,7 @@ void rip::Rip::receive_heart_beat(host_t host) {
 std::string rip::Rip::stringify_table(table_t table) {
   int tot_len = sizeof(table_item) * table.size(), index = 0;
   char *tmp = new char[tot_len];
-  for (auto it = _neibors.begin(); it != _neibors.end(); ++it, ++index) {
+  for (auto it = table.begin(); it != table.end(); ++it, ++index) {
     memcpy(tmp + index * sizeof(table_item), &(*it), sizeof(table_item));
   }
   std::string table_str(tmp, tot_len);

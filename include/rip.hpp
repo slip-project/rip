@@ -25,6 +25,7 @@ public:
     host_t(Udp::ip_t ip, Udp::port_t port);
     host_t() = default;
     bool operator==(const host_t & other) const;
+    bool operator!=(const host_t & other) const;
     std::string to_string() const;
   };
 
@@ -91,9 +92,9 @@ public:
 
   void receive_heart_beat(host_t host);
 
-  std::string stringify_table(table_t table);
+  static std::string stringify_table(table_t table);
 
-  table_t parse_table(std::string table_str);
+  static table_t parse_table(std::string table_str);
 
 protected:
   host_t _localhost;
