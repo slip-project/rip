@@ -6,7 +6,7 @@ SRC := src
 TEST := test
 BIN := bin
 
-$(BIN)/test: $(BUILD)/test.o $(BUILD)/udp.o $(BUILD)/timeout.o $(BUILD)/rip.o $(BUILD)/rip_distributed.o
+$(BIN)/test: $(BUILD)/test.o $(BUILD)/udp.o $(BUILD)/timeout.o $(BUILD)/dv.o $(BUILD)/dv_distributed.o
 	@mkdir -p ./$(BIN)
 	$(CXX) $(FLAGS) -I $(INCLUDE) -o $@ $^
 

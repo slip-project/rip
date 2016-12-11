@@ -1,17 +1,17 @@
-#ifndef __RIP__DISTRIBUTED__HPP__
-#define __RIP__DISTRIBUTED__HPP__ 1
+#ifndef __DV__DISTRIBUTED__HPP__
+#define __DV__DISTRIBUTED__HPP__ 1
 
-#include "rip.hpp"
+#include "dv.hpp"
 #include <string>
 
 namespace rip {
 
-class Rip_distributed: public Rip {
+class Dv_distributed: public Dv {
 
 public:
 
-  Rip_distributed(std::string ip, Udp::port_t port);
-  virtual ~Rip_distributed();
+  Dv_distributed(std::string ip, Udp::port_t port);
+  virtual ~Dv_distributed();
 
   void sync() override;
 
