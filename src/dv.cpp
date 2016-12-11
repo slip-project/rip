@@ -35,6 +35,7 @@ void rip::Dv::send_table(host_t host) {
 }
 
 void rip::Dv::update_table(host_t source, table_t table) {
+  // DV algorithm
   for (auto it = table.begin(); it != table.end(); ++it) {
     if (it->second.next != _localhost) {
     // 当邻居的转发表中的 next 不为自身时才更新
