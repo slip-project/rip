@@ -9,7 +9,7 @@ static void log(std::string message) {
 }
 #endif
 
-rip::Dv_distributed::Dv_distributed(std::string ip, Udp::port_t port) : Dv(ip, port) {}
+rip::Dv_distributed::Dv_distributed(host_t localhost) : Dv(localhost) {}
 rip::Dv_distributed::~Dv_distributed() {}
 
 void rip::Dv_distributed::sync() {
@@ -28,8 +28,8 @@ rip::Dv_distributed::neibor_ptr rip::Dv_distributed::add_neibor(host_t host) {
   update_neibor_timer(neibor_p);
   _table[host] = table_item(host, 1);
 
-  #ifdef BUDEG
-  log("neibor + " + neibor_p->dest.to_string() + " added");
+  #ifdef DEBUG
+  log("neibor + " + neibor_p->host.to_string() + " added");
   #endif
 
   return neibor_p;

@@ -13,7 +13,7 @@ static void log(std::string message) {
 rip::Dv::table_item::table_item(host_t nn, int cc)
   : next(nn), cost(cc) {}
 
-rip::Dv::Dv(std::string ip, Udp::port_t port) : Rip(ip, port) {
+rip::Dv::Dv(host_t localhost) : Rip(localhost) {
   _table[_localhost] = table_item(_localhost, 0);
 }
 

@@ -13,10 +13,8 @@ static void log(std::string message) {
 }
 #endif
 
-rip::Ls::Ls(std::string ip, Udp::port_t port)
-  : Rip(ip, port) {
-
-}
+rip::Ls::Ls(host_t localhost)
+  : Rip(localhost) {}
 
 rip::Ls::~Ls() {}
 

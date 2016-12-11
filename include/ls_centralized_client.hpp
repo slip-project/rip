@@ -1,17 +1,16 @@
-#ifndef __DV__DISTRIBUTED__HPP__
-#define __DV__DISTRIBUTED__HPP__ 1
+#ifndef __LS__CENTRALIZED__CLIENT__HPP__
+#define __LS__CENTRALIZED__CLIENT__HPP__ 1
 
-#include "dv.hpp"
-#include <string>
+#include "ls.hpp"
 
 namespace rip {
 
-class Dv_distributed: public Dv {
+class Ls_centralized_client: public Ls {
 
 public:
 
-  Dv_distributed(host_t localhost);
-  virtual ~Dv_distributed();
+  Ls_centralized_client(host_t localhost, host_t center_host);
+  virtual ~Ls_centralized_client();
 
   void sync() override;
 
@@ -23,7 +22,13 @@ public:
 
   void route_message(host_t dest, std::string message) override;
 
+  void send_table(host_t dest) override;
+
   void receive_table(host_t source, table_t table) override;
+
+protected:
+
+  host_t _center;
 
 };
 

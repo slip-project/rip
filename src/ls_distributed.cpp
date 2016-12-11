@@ -9,7 +9,7 @@ static void log(std::string message) {
 }
 #endif
 
-rip::Ls_distributed::Ls_distributed(std::string ip, Udp::port_t port) : Ls(ip, port) {}
+rip::Ls_distributed::Ls_distributed(host_t localhost) : Ls(localhost) {}
 rip::Ls_distributed::~Ls_distributed() {}
 
 void rip::Ls_distributed::sync() {
@@ -21,6 +21,17 @@ void rip::Ls_distributed::sync() {
 
     send_table(it->host);
   }
+}
+
+rip::Ls_distributed::neibor_ptr rip::Ls_distributed::add_neibor(host_t host) {
+  auto neibor_p = Ls::add_neibor(host);
+  update_neibor_timer(neibor_p);
+
+  #ifdef DEBUG
+  log("neibor + " + neibor_p->host.to_string() + " added");
+  #endif
+
+  return neibor_p;
 }
 
 void rip::Ls_distributed::receive_message(host_t source, std::string message) {

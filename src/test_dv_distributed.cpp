@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]) {
     Udp::port_t port   = stoi(string(argv[2]));
     string cmd, msg;
 
-    Dv_distributed dv(ip, port);
+    Dv_distributed dv(host_t(ip, port));
     while (cin >> cmd) {
       if (cmd == "add") {
         cin >> ip >> port;

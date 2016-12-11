@@ -6,7 +6,7 @@
 
 namespace rip {
 
-static struct table_item {
+struct table_item {
   host_t next;
   int cost;
 
@@ -19,13 +19,13 @@ public:
 
   typedef table_item table_item;
 
-  Dv(std::string ip, Udp::port_t port);
+  Dv(host_t localhost);
 
   virtual ~Dv();
 
   void send_table(host_t host) override;
 
-  virtual void update_table(host_t host, table_t table);
+  void update_table(host_t host, table_t table) override;
 
   void route_message(host_t dest, std::string message) override;
 

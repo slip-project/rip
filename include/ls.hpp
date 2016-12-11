@@ -13,19 +13,19 @@ public:
   typedef std::pair<int, host_t> router_item;
   typedef std::map<host_t, host_t> router_t;
 
-  Ls(std::string ip, Udp::port_t port);
+  Ls(host_t localhost);
 
   virtual ~Ls();
 
   void send_table(host_t host) override;
 
-  virtual void update_table(host_t host, table_t table);
+  void update_table(host_t host, table_t table) override;
 
   void route_message(host_t dest, std::string message) override;
 
-  std::string stringify_table(table_t table);
+  std::string stringify_table(table_t table) override;
 
-  table_t parse_table(std::string table_str);
+  table_t parse_table(std::string table_str) override;
 
   router_t get_router() { return _router; }
 

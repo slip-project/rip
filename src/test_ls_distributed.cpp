@@ -1,7 +1,4 @@
 #include <iostream>
-#include <string>
-#include <queue>
-#include <functional>
 #include "ls_distributed.hpp"
 
 using namespace std;
@@ -43,16 +40,16 @@ int main(int argc, char const *argv[]) {
     Udp::port_t port   = stoi(string(argv[2]));
     string cmd, msg;
 
-    Ls_distributed dv(ip, port);
+    Ls_distributed ls(host_t(ip, port));
     while (cin >> cmd) {
       if (cmd == "add") {
         cin >> ip >> port;
-        dv.add_neibor(host_t(ip, port));
+        ls.add_neibor(host_t(ip, port));
       } else if (cmd == "send") {
         cin >> ip >> port >> msg;
-        dv.route_message(host_t(ip, port), msg);
+        ls.route_message(host_t(ip, port), msg);
       } else if (cmd == "table") {
-        const Ls::table_t & table = dv.get_table();
+        const Ls::table_t & table = ls.get_table();
         for (auto it = table.begin(); it != table.end(); ++it) {
           cout << it->first.to_string() << " [";
           for (auto jt = it->second.begin(); jt != it->second.end(); ++jt) {
@@ -61,7 +58,7 @@ int main(int argc, char const *argv[]) {
           cout << "]" << endl;
         }
       } else if (cmd == "router") {
-        const Ls::router_t & router = dv.get_router();
+        const Ls::router_t & router = ls.get_router();
         for (auto it = router.begin(); it != router.end(); ++it) {
           cout << it->first.to_string() << " => " << it->second.to_string() << endl;
         }

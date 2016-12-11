@@ -65,7 +65,7 @@ public:
 
   typedef typename neibor_list::iterator neibor_ptr;
 
-  Rip(std::string ip, Udp::port_t port): _localhost(ip, port), _udp(port) {
+  Rip(host_t localhost): _localhost(localhost), _udp(localhost.port) {
     schedule_sync();
     _udp.add_listener([=](Udp::ip_t source_ip, Udp::port_t source_port, std::string data)->void{
       solve_comming_message(source_ip, source_port, data);
@@ -164,6 +164,8 @@ public:
 
   virtual void send_table(host_t host) = 0;
 
+  virtual void update_table(host_t host, table_t table) = 0;
+
   virtual void receive_table(host_t host, table_t table) = 0;
     void send_message(host_t dest, host_t router, std::string message) {
     int header_len = sizeof(rip_header);
@@ -182,21 +184,26 @@ public:
 
   virtual void receive_message(host_t host, std::string message) = 0;
 
-  void send_heart_beat(host_t dest) {
+  virtual void send_heart_beat(host_t dest) {
     int tot_len = sizeof(rip_header);
 
     rip_header rip_h;
 
-    rip_h->type = HEART;
-    rip_h->dest = dest;
+    rip_h.type = HEART;
+    rip_h.dest = dest;
 
     std::string data((char *)&rip_h, tot_len);
 
     _udp.send(dest.ip, dest.port, data);
   }
 
-  void receive_heart_beat(host_t host)  {
-    update_timer(host);
+  virtual void receive_heart_beat(host_t host) {
+    auto neibor_p = find_neibor(host);
+    if (neibor_p != _neibors.end()) {
+      update_neibor_timer(neibor_p);
+    } else {
+      add_neibor(host);
+    }
   }
 
   const table_t & get_table() const { return _table; }
