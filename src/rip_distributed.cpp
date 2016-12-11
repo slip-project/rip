@@ -15,9 +15,9 @@ static void log(std::string message) {
   void rip::Rip_distributed::sync() {
     for (auto it = _neibors.begin(); it != _neibors.end(); ++it) {
 
-      #ifdef DEBUG
-      log("sync with " + it->dest.to_string());
-      #endif
+      // #ifdef DEBUG
+      // log("sync with " + it->dest.to_string());
+      // #endif
 
       send_table(it->dest);
     }
@@ -52,14 +52,21 @@ static void log(std::string message) {
   }
 
   void rip::Rip_distributed::receive_message(host_t source, std::string message) {
-    std::cout << "Receive message from " << source.ip << ":" << source.port << " \"" << message << "\"" << std::endl;
+    std::cout << "Receive message from " << Udp::stringify_ip(source.ip) << ":" << source.port << " \"" << message << "\"" << std::endl;
+  }
+
+  void rip::Rip_distributed::route_message(host_t dest, std::string message) {
+    Rip::route_message(dest, message);
+    #ifdef DEBUG
+    log("routing for " + dest.to_string() + " [" + message + "]");
+    #endif
   }
 
   void rip::Rip_distributed::receive_table(host_t source, table_t table) {
 
-    #ifdef DEBUG
-    log("receive table from " + source.to_string());
-    #endif
+    // #ifdef DEBUG
+    // log("receive table from " + source.to_string());
+    // #endif
 
     auto neibor_p = find_neibor(source);
     if (neibor_p != _neibors.end()) {
@@ -105,10 +112,10 @@ static void log(std::string message) {
       ++it;
     }
 
-    #ifdef DEBUG
-    log("current table:");
-    for (auto it = _table.begin(); it != _table.end(); ++it) {
-      log("|" + it->dest.to_string() + "\t|" + it->next.to_string() + "\t|" + std::to_string(it->cost) + "\t|");
-    }
-    #endif
+    // #ifdef DEBUG
+    // log("current table:");
+    // for (auto it = _table.begin(); it != _table.end(); ++it) {
+    //   log("|" + it->dest.to_string() + "\t|" + it->next.to_string() + "\t|" + std::to_string(it->cost) + "\t|");
+    // }
+    // #endif
   }

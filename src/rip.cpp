@@ -1,7 +1,7 @@
 #include "rip.hpp"
 #include <cstdlib>
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
 #include <iostream>
@@ -142,39 +142,34 @@ void rip::Rip::send_table(host_t host) {
   auto table_str = stringify_table(_table);
 
   int header_len = sizeof(rip_header);
-  char *tmp = new char[header_len];
 
-  rip_header *rip_h = (rip_header*) tmp;
+  rip_header rip_h;
 
-  rip_h->type = TABLE;
-  rip_h->dest = host;
+  rip_h.type = TABLE;
+  rip_h.dest = host;
 
-  std::string data = std::string(tmp, header_len) + table_str;
-  delete[] tmp;
+  std::string data = std::string((char *)&rip_h, header_len) + table_str;
 
   _udp.send(host.ip, host.port, data);
 }
 
-void rip::Rip::send_message(host_t dest, std::string message) {
-  int tot_len = sizeof(rip_header) + message.size();
-  char *tmp = new char[tot_len];
+void rip::Rip::send_message(host_t dest, host_t router, std::string message) {
+  int header_len = sizeof(rip_header);
 
-  memcpy(tmp, tmp + sizeof(rip_header), message.size());
-  rip_header *rip_h = (rip_header*) tmp;
+  rip_header rip_h;
 
-  rip_h->type = MESSAGE;
-  rip_h->dest = dest;
+  rip_h.type = MESSAGE;
+  rip_h.dest = dest;
 
-  std::string data(tmp, tot_len);
-  delete[] tmp;
+  std::string data = std::string((char *)&rip_h, header_len) + message;
 
-  _udp.send(dest.ip, dest.port, data);
+  _udp.send(router.ip, router.port, data);
 }
 
 void rip::Rip::route_message(host_t dest, std::string message) {
   for (auto it = _table.begin(); it != _table.end(); ++it) {
     if (it->dest == dest) {
-      send_message(it->next, message);
+      send_message(dest, it->next, message);
       break;
     }
   }

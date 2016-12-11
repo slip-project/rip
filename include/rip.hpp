@@ -82,9 +82,9 @@ public:
 
   virtual void receive_table(host_t host, table_t table) = 0;
 
-  void send_message(host_t dest, std::string message);
+  void send_message(host_t dest, host_t router, std::string message);
 
-  void route_message(host_t dest, std::string message);
+  virtual void route_message(host_t dest, std::string message);
 
   virtual void receive_message(host_t host, std::string message) = 0;
 
@@ -95,6 +95,8 @@ public:
   static std::string stringify_table(table_t table);
 
   static table_t parse_table(std::string table_str);
+
+  const table_t & get_table() const { return _table; }
 
 protected:
   host_t _localhost;

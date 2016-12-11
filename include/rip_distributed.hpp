@@ -6,7 +6,7 @@
 
 namespace rip {
 
-class Rip_distributed: Rip {
+class Rip_distributed: public Rip {
 
 public:
 
@@ -20,6 +20,8 @@ public:
   void remove_neibor(neibor_ptr neibor_p) override;
 
   void receive_message(host_t source, std::string message) override;
+
+  void route_message(host_t dest, std::string message) override;
 
   void receive_table(host_t source, table_t table) override;
 
