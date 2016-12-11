@@ -18,12 +18,14 @@ public:
   static const short HEART   = 3;
 
   struct host_t {
-    std::string ip;
+    Udp::ip_t ip;
     Udp::port_t port;
 
     host_t(std::string ip, Udp::port_t port);
+    host_t(Udp::ip_t ip, Udp::port_t port);
     host_t() = default;
     bool operator==(const host_t & other) const;
+    std::string to_string() const;
   };
 
   struct rip_header {
@@ -35,6 +37,9 @@ public:
     host_t dest;
     host_t next;
     int cost;
+
+    table_item(host_t dest, host_t next, int cost);
+    table_item() = default;
   };
 
   struct neibor_t {
@@ -58,11 +63,15 @@ public:
 
   virtual void sync() = 0;
 
-  void solve_comming_message(std::string source_ip, Udp::port_t source_port, std::string data);
+  void solve_comming_message(Udp::ip_t source_ip, Udp::port_t source_port, std::string data);
 
-  neibor_ptr add_neibor(host_t host);
+  virtual neibor_ptr add_neibor(host_t host);
 
-  void remove_neibor(neibor_ptr neibor_p);
+  bool has_neibor(host_t host) const;
+
+  neibor_ptr find_neibor(host_t host);
+
+  virtual void remove_neibor(neibor_ptr neibor_p);
 
   void update_timer(host_t host);
 

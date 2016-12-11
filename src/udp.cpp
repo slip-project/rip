@@ -29,12 +29,12 @@ rip::Udp::~Udp() {
   close(_socketfd);
 }
 
-int rip::Udp::send(std::string dest_ip, port_t dest_port, std::string data) {
+int rip::Udp::send(ip_t dest_ip, port_t dest_port, std::string data) {
 
   #ifdef DEBUG
 
   std::cout << "===== udp send datagram =====" << std::endl;
-  std::cout << "remote client: " << dest_ip << ":" << dest_port << std::endl;
+  std::cout << "remote client: " << stringify_ip(dest_ip) << ":" << dest_port << std::endl;
   std::cout << "local port: " << source_port << std::endl;
   std::cout << "data: " << data << std::endl;
   std::cout << "=============================" << std::endl;
@@ -49,7 +49,7 @@ int rip::Udp::send(std::string dest_ip, port_t dest_port, std::string data) {
 
   dest_addr.sin_family = AF_INET;
   dest_addr.sin_port = htons(dest_port); // 目的端口
-  dest_addr.sin_addr.s_addr = inet_addr(dest_ip.c_str()); // 目的ip
+  dest_addr.sin_addr.s_addr = dest_ip; // 目的ip
 
   socklen_t dest_addr_len = sizeof(dest_addr);
 
@@ -103,7 +103,7 @@ void rip::Udp::receive_loop() {
     if ((tot_len = recvfrom (_socketfd, datagram, sizeof(datagram), MSG_DONTWAIT, (struct sockaddr *) &dest_addr, &dest_addr_len)) != -1) {
 
       // 源主机信息
-      std::string dest_ip = std::string(inet_ntoa(dest_addr.sin_addr));
+      ip_t dest_ip = dest_addr.sin_addr.s_addr;
       port_t dest_port = ntohs(dest_addr.sin_port);
 
       std::string data = std::string(datagram, tot_len);
@@ -115,4 +115,14 @@ void rip::Udp::receive_loop() {
     }
   }
 
+}
+
+rip::Udp::ip_t rip::Udp::parse_ip(std::string ip) {
+  return inet_addr(ip.c_str());
+}
+
+std::string rip::Udp::stringify_ip(ip_t ip) {
+  auto addr = in_addr();
+  addr.s_addr = ip;
+  return std::string(inet_ntoa(addr));
 }

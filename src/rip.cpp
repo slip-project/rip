@@ -5,23 +5,33 @@
 
 #ifdef DEBUG
 #include <iostream>
-void log(std::string message) {
+static void log(std::string message) {
   std::cout << "[rip]\t" << message << std::endl;
 }
 #endif
 
 rip::Rip::host_t::host_t(std::string ii, Udp::port_t pp) :
+  ip(Udp::parse_ip(ii)), port(pp) {}
+
+rip::Rip::host_t::host_t(Udp::ip_t ii, Udp::port_t pp) :
   ip(ii), port(pp) {}
 
 bool rip::Rip::host_t::operator==(const host_t & other) const {
   return ip == other.ip && port == other.port;
 }
 
+std::string rip::Rip::host_t::to_string() const {
+  return Udp::stringify_ip(ip) + ":" + std::to_string(port);
+}
+
 rip::Rip::neibor_t::neibor_t(host_t dd): dest(dd) {}
+
+rip::Rip::table_item::table_item(host_t dd, host_t nn, int cc)
+  : dest(dd), next(nn), cost(cc) {}
 
 rip::Rip::Rip(std::string ip, Udp::port_t port): _localhost(ip, port), _udp(port) {
   schedule_sync();
-  _udp.add_listener([=](std::string source_ip, Udp::port_t source_port, std::string data)->void{
+  _udp.add_listener([=](Udp::ip_t source_ip, Udp::port_t source_port, std::string data)->void{
     solve_comming_message(source_ip, source_port, data);
   });
 }
@@ -46,24 +56,23 @@ void rip::Rip::schedule_sync() {
   });
 }
 
-void rip::Rip::solve_comming_message(std::string source_ip, Udp::port_t source_port, std::string data) {
+void rip::Rip::solve_comming_message(Udp::ip_t source_ip, Udp::port_t source_port, std::string data) {
 
   host_t source_host(source_ip, source_port);
-  const rip_header *rip_h = (const rip_header*) data.data();
+  rip_header rip_h(*((const rip_header*) data.data()));
   std::string message = data.substr(sizeof(rip_header));
 
   #ifdef DEBUG
-  log("solve comming message from " + source_ip + ":" + std::to_string(source_port)
-      + " type:" + std::to_string(rip_h->type) + " dest: " + rip_h->dest.ip + ":" + std::to_string(rip_h->dest.port)
-      + " message:" + message);
+  log("solve comming message from " + source_host.to_string()
+      + " type:" + std::to_string(rip_h.type) + " dest: " + rip_h.dest.to_string());
   #endif
 
-  switch (rip_h->type) {
+  switch (rip_h.type) {
     case MESSAGE:
-      if (rip_h->dest == _localhost) {
+      if (rip_h.dest == _localhost) {
         receive_message(source_host, message);
       } else {
-        route_message(rip_h->dest, message);
+        route_message(rip_h.dest, message);
       }
       break;
     case TABLE:
@@ -82,18 +91,32 @@ rip::Rip::neibor_ptr rip::Rip::add_neibor(host_t host) {
   return neibor_p;
 }
 
+bool rip::Rip::has_neibor(host_t host) const {
+  for (auto it = _neibors.begin(); it != _neibors.end(); ++it) {
+    if (it->dest == host) {
+      return true;
+    }
+  }
+  return false;
+}
+
+rip::Rip::neibor_ptr rip::Rip::find_neibor(host_t host) {
+  for (neibor_ptr it = _neibors.begin(); it != _neibors.end(); ++it) {
+    if (it->dest == host) {
+      return it;
+    }
+  }
+  return _neibors.end();
+}
+
 void rip::Rip::remove_neibor(neibor_ptr neibor_p) {
   neibor_p->timer->enable = false;
   _neibors.erase(neibor_p);
 }
 
 void rip::Rip::update_timer(host_t host) {
-  for (auto it = _neibors.begin(); it != _neibors.end(); ++it) {
-    if (it->dest == host) {
-      update_neibor_timer(it);
-      return;
-    }
-  }
+  auto neibor_p = find_neibor(host);
+  if (neibor_p != _neibors.end()) update_neibor_timer(neibor_p);
 }
 
 void rip::Rip::update_neibor_timer(neibor_ptr neibor_p) {
@@ -101,7 +124,7 @@ void rip::Rip::update_neibor_timer(neibor_ptr neibor_p) {
   neibor_p->timer = _timeout.add_timer(WAIT_TIMEOUT, [=]()->void{
 
     #ifdef DEBUG
-    log("timeout triggerd for " + neibor_p->dest.ip + std::to_string(neibor_p->dest.port));
+    log("timeout triggerd for " + neibor_p->dest.to_string());
     #endif
 
     remove_neibor(neibor_p);
@@ -181,10 +204,20 @@ std::string rip::Rip::stringify_table(table_t table) {
 }
 
 rip::Rip::table_t rip::Rip::parse_table(std::string table_str) {
+
+  #ifdef DEBUG
+  log("parsing table");
+  #endif
+
   const char *tmp = table_str.data();
   table_item item;
   table_t table;
   for (int i = 0; i < table_str.size(); i += sizeof(table_item)) {
+
+    #ifdef DEBUG
+    log(std::to_string(i) + "/" + std::to_string(table_str.size()));
+    #endif
+
     memcpy(&item, tmp + i, sizeof(table_item));
     table.push_back(item);
   }

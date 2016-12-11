@@ -21,10 +21,12 @@ public:
    */
   typedef unsigned short port_t;
 
+  typedef unsigned int ip_t;
+
   /**
    * 定义监听器
    */
-  typedef std::function<void(std::string, port_t, std::string)> listener;
+  typedef std::function<void(ip_t, port_t, std::string)> listener;
 
   /**
    * 定义监听器指针
@@ -42,7 +44,7 @@ public:
    * @param  data        [发送的数据，字符串形式]
    * @return             [调用系统默认的sendto函数的返回值]
    */
-  int send(std::string dest_ip, port_t dest_port, std::string data);
+  int send(ip_t dest_ip, port_t dest_port, std::string data);
 
   /**
    * [add_listener 添加监听器方法]
@@ -57,6 +59,10 @@ public:
    * @return      [布尔值，移除操作处理结果]
    */
   bool remove_listener(Udp::listener_ptr ptr);
+
+  static ip_t parse_ip(std::string ip);
+
+  static std::string stringify_ip(ip_t ip);
 
 private:
 
