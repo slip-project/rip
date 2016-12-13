@@ -1,5 +1,6 @@
 #include "dv.hpp"
 #include <cstdlib>
+#include <cstring>
 
 // #define DEBUG
 
@@ -10,7 +11,7 @@ static void log(std::string message) {
 }
 #endif
 
-rip::Dv::table_item::table_item(host_t nn, int cc)
+rip::_table_item::_table_item(host_t nn, int cc)
   : next(nn), cost(cc) {}
 
 rip::Dv::Dv(host_t localhost) : Rip(localhost) {
@@ -95,7 +96,7 @@ rip::Dv::table_t rip::Dv::parse_table(std::string table_str) {
   const char *tmp = table_str.data();
   table_t::value_type item;
   table_t table;
-  for (int i = 0; i < table_str.size(); i += item_len) {
+  for (size_t i = 0; i < table_str.size(); i += item_len) {
 
     #ifdef DEBUG
     log(std::to_string(i) + "/" + std::to_string(table_str.size()));

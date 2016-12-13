@@ -6,18 +6,18 @@
 
 namespace rip {
 
-struct table_item {
+struct _table_item {
   host_t next;
   int cost;
 
-  table_item(host_t next, int cost);
-  table_item() = default;
+  _table_item(host_t next, int cost);
+  _table_item() = default;
 };
 
-class Dv: public Rip<std::map<host_t, table_item> > {
+class Dv: public Rip<std::map<host_t, _table_item> > {
 public:
 
-  typedef table_item table_item;
+  typedef _table_item table_item;
 
   Dv(host_t localhost);
 
