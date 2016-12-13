@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]) {
     while (cin >> cmd) {
       if (cmd == "add") {
         cin >> ip >> port;
-        dv.add_neibor(host_t(ip, port));
+        dv.add_neighbor(host_t(ip, port));
       } else if (cmd == "send") {
         cin >> ip >> port >> msg;
         dv.route_message(host_t(ip, port), msg);

@@ -1,5 +1,5 @@
 CXX := g++
-FLAGS := -std=c++11 -Wall -pthread
+FLAGS := -std=c++11 -Wall -pthread -O3
 INCLUDE := include
 BUILD := build
 SRC := src

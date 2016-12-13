@@ -15,9 +15,9 @@ public:
 
   void sync() override;
 
-  neibor_ptr add_neibor(host_t host) override;
+  neighbor_ptr add_neighbor(host_t host) override;
 
-  void remove_neibor(neibor_ptr neibor_p) override;
+  void remove_neighbor(neighbor_ptr neighbor_p) override;
 
   void receive_message(host_t source, std::string message) override;
 

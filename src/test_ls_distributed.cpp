@@ -25,8 +25,8 @@ int main(int argc, char const *argv[]) {
 
   // Ls_distributed ls("127.0.0.1", 1234);
 
-  // ls.add_neibor(host_t("127.0.0.1", 1235));
-  // ls.add_neibor(host_t("127.0.0.1", 1237));
+  // ls.add_neighbor(host_t("127.0.0.1", 1235));
+  // ls.add_neighbor(host_t("127.0.0.1", 1237));
   // ls.update_table(host_t("127.0.0.1", 1235), table);
 
   // Ls_distributed::router_t router = ls.get_router();
@@ -44,7 +44,7 @@ int main(int argc, char const *argv[]) {
     while (cin >> cmd) {
       if (cmd == "add") {
         cin >> ip >> port;
-        ls.add_neibor(host_t(ip, port));
+        ls.add_neighbor(host_t(ip, port));
       } else if (cmd == "send") {
         cin >> ip >> port >> msg;
         ls.route_message(host_t(ip, port), msg);

@@ -40,12 +40,12 @@ void rip::Ls::update_table(host_t source, table_t table) {
   _table = table;
   _table[_localhost] = {};
   // 首先将邻居加入路径表
-  for (auto it = _neibors.begin(); it != _neibors.end(); ++it) {
+  for (auto it = _neighbors.begin(); it != _neighbors.end(); ++it) {
     router[it->host] = std::make_pair(1, _localhost);
     q.push(std::make_pair(1, it->host));
     _table[_localhost].push_back(it->host);
   }
-  // 然后运行 dijsktra 算法
+  // 然后运行 dijkstra 算法
   while (!q.empty()) {
     auto cur = q.top();
     q.pop();
@@ -125,7 +125,7 @@ rip::Ls::table_t rip::Ls::parse_table(std::string table_str) {
   #endif
 
   const std::string host_pattern = "([0-9\\.]+):(\\d+)\\s*";
-  const std::string map_pattern = "\\{" + host_pattern + "=\\[([^\\]]*)\\]\\}";
+  const std::string map_pattern  = "\\{" + host_pattern + "=\\[([^\\]]*)\\]\\}";
 
   const std::regex host_regex(host_pattern), map_regex(map_pattern);
 

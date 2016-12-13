@@ -50,20 +50,20 @@ public:
     host_t dest;
   };
 
-  struct neibor_t {
+  struct neighbor_t {
     host_t host;
     Timeout::timer_pcb_ptr timer;
 
-    neibor_t(host_t hh)
+    neighbor_t(host_t hh)
       : host(hh) {}
-    neibor_t() = default;
+    neighbor_t() = default;
   };
 
   typedef T table_t;
 
-  typedef std::list<neibor_t> neibor_list;
+  typedef std::list<neighbor_t> neighbor_list;
 
-  typedef typename neibor_list::iterator neibor_ptr;
+  typedef typename neighbor_list::iterator neighbor_ptr;
 
   Rip(host_t localhost): _localhost(localhost), _udp(localhost.port) {
     schedule_sync();
@@ -74,7 +74,7 @@ public:
 
   virtual ~Rip() {
     if (_timer) _timer->enable = false;
-    for (auto it = _neibors.begin(); it != _neibors.end(); ++it) {
+    for (auto it = _neighbors.begin(); it != _neighbors.end(); ++it) {
       if (it->timer) it->timer->enable = false;
     }
   }
@@ -124,41 +124,41 @@ public:
     }
   }
 
-  virtual neibor_ptr add_neibor(host_t host) {
-    neibor_t neibor(host);
-    _neibors.push_front(neibor);
-    neibor_ptr neibor_p = _neibors.begin();
-    return neibor_p;
+  virtual neighbor_ptr add_neighbor(host_t host) {
+    neighbor_t neighbor(host);
+    _neighbors.push_front(neighbor);
+    neighbor_ptr neighbor_p = _neighbors.begin();
+    return neighbor_p;
   }
 
-  neibor_ptr find_neibor(host_t host) {
-    for (neibor_ptr it = _neibors.begin(); it != _neibors.end(); ++it) {
+  neighbor_ptr find_neighbor(host_t host) {
+    for (neighbor_ptr it = _neighbors.begin(); it != _neighbors.end(); ++it) {
       if (it->host == host) {
         return it;
       }
     }
-    return _neibors.end();
+    return _neighbors.end();
   }
 
-  virtual void remove_neibor(neibor_ptr neibor_p) {
-    neibor_p->timer->enable = false;
-    _neibors.erase(neibor_p);
+  virtual void remove_neighbor(neighbor_ptr neighbor_p) {
+    neighbor_p->timer->enable = false;
+    _neighbors.erase(neighbor_p);
   }
 
   void update_timer(host_t host)  {
-    auto neibor_p = find_neibor(host);
-    if (neibor_p != _neibors.end()) update_neibor_timer(neibor_p);
+    auto neighbor_p = find_neighbor(host);
+    if (neighbor_p != _neighbors.end()) update_neighbor_timer(neighbor_p);
   }
 
-  void update_neibor_timer(neibor_ptr neibor_p)  {
-    if (neibor_p->timer) neibor_p->timer->enable = false;
-    neibor_p->timer = _timeout.add_timer(WAIT_TIMEOUT, [=]()->void{
+  void update_neighbor_timer(neighbor_ptr neighbor_p)  {
+    if (neighbor_p->timer) neighbor_p->timer->enable = false;
+    neighbor_p->timer = _timeout.add_timer(WAIT_TIMEOUT, [=]()->void{
 
       #ifdef DEBUG
-      log("timeout triggerd for " + neibor_p->dest.to_string());
+      log("timeout triggerd for " + neighbor_p->dest.to_string());
       #endif
 
-      remove_neibor(neibor_p);
+      remove_neighbor(neighbor_p);
     });
   }
 
@@ -198,11 +198,11 @@ public:
   }
 
   virtual void receive_heart_beat(host_t host) {
-    auto neibor_p = find_neibor(host);
-    if (neibor_p != _neibors.end()) {
-      update_neibor_timer(neibor_p);
+    auto neighbor_p = find_neighbor(host);
+    if (neighbor_p != _neighbors.end()) {
+      update_neighbor_timer(neighbor_p);
     } else {
-      add_neibor(host);
+      add_neighbor(host);
     }
   }
 
@@ -215,7 +215,7 @@ public:
 protected:
   host_t _localhost;
   table_t _table;
-  neibor_list _neibors;
+  neighbor_list _neighbors;
   Udp _udp;
   Timeout _timeout;
   Timeout::timer_pcb_ptr _timer;

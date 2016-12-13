@@ -13,7 +13,7 @@ rip::Ls_distributed::Ls_distributed(host_t localhost) : Ls(localhost) {}
 rip::Ls_distributed::~Ls_distributed() {}
 
 void rip::Ls_distributed::sync() {
-  for (auto it = _neibors.begin(); it != _neibors.end(); ++it) {
+  for (auto it = _neighbors.begin(); it != _neighbors.end(); ++it) {
 
     // #ifdef DEBUG
     // log("sync with " + it->host.to_string());
@@ -23,15 +23,15 @@ void rip::Ls_distributed::sync() {
   }
 }
 
-rip::Ls_distributed::neibor_ptr rip::Ls_distributed::add_neibor(host_t host) {
-  auto neibor_p = Ls::add_neibor(host);
-  update_neibor_timer(neibor_p);
+rip::Ls_distributed::neighbor_ptr rip::Ls_distributed::add_neighbor(host_t host) {
+  auto neighbor_p = Ls::add_neighbor(host);
+  update_neighbor_timer(neighbor_p);
 
   #ifdef DEBUG
-  log("neibor + " + neibor_p->host.to_string() + " added");
+  log("neighbor + " + neighbor_p->host.to_string() + " added");
   #endif
 
-  return neibor_p;
+  return neighbor_p;
 }
 
 void rip::Ls_distributed::receive_message(host_t source, std::string message) {
@@ -51,11 +51,11 @@ void rip::Ls_distributed::receive_table(host_t source, table_t table) {
   log("receive table from " + source.to_string());
   #endif
 
-  auto neibor_p = find_neibor(source);
-  if (neibor_p != _neibors.end()) {
-    update_neibor_timer(neibor_p);
+  auto neighbor_p = find_neighbor(source);
+  if (neighbor_p != _neighbors.end()) {
+    update_neighbor_timer(neighbor_p);
   } else {
-    neibor_p = add_neibor(source);
+    neighbor_p = add_neighbor(source);
   }
   // using DV algorithm
   update_table(source, table);
