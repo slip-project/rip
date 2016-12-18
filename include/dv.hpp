@@ -13,7 +13,6 @@ struct _table_item {
   _table_item(host_t next, int cost);
   _table_item() = default;
 };
-
 class Dv: public Rip<std::map<host_t, _table_item> > {
 public:
 

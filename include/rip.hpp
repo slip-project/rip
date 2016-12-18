@@ -6,7 +6,9 @@
 #include <string>
 
 namespace rip {
-
+/**
+ * 主机类型
+ */
 struct host_t {
   Udp::ip_t ip;
   Udp::port_t port;
@@ -40,16 +42,16 @@ public:
 
   static const int SYNC_INTERVAL = 1000;
   static const int WAIT_TIMEOUT  = 5000;
-
-  static const short MESSAGE = 1;
-  static const short TABLE   = 2;
-  static const short HEART   = 3;
-
+  // 消息类型
+  static const short MESSAGE = 1;  // 消息正文
+  static const short TABLE   = 2;  // 路由表泛洪
+  static const short HEART   = 3;  // 心跳
+  // 路由消息头
   struct rip_header {
     short type;
     host_t dest;
   };
-
+  // 邻居主机类型
   struct neighbor_t {
     host_t host;
     Timeout::timer_pcb_ptr timer;
@@ -58,9 +60,9 @@ public:
       : host(hh) {}
     neighbor_t() = default;
   };
-
+  // 路由表类型, 模板由子类确定
   typedef T table_t;
-
+  // 邻居列表
   typedef std::list<neighbor_t> neighbor_list;
 
   typedef typename neighbor_list::iterator neighbor_ptr;
@@ -78,7 +80,7 @@ public:
       if (it->timer) it->timer->enable = false;
     }
   }
-
+  // 开始计时器
   void schedule_sync()  {
 
     #ifdef DEBUG
@@ -93,7 +95,7 @@ public:
   }
 
   virtual void sync() = 0;
-
+  // 处理接收到的消息
   void solve_comming_message(Udp::ip_t source_ip, Udp::port_t source_port, std::string data) {
 
     int header_len = sizeof(rip_header);
@@ -123,14 +125,14 @@ public:
         break;
     }
   }
-
+  // 添加邻居主机
   virtual neighbor_ptr add_neighbor(host_t host) {
     neighbor_t neighbor(host);
     _neighbors.push_front(neighbor);
     neighbor_ptr neighbor_p = _neighbors.begin();
     return neighbor_p;
   }
-
+  // 在列表中查找邻居主机
   neighbor_ptr find_neighbor(host_t host) {
     for (neighbor_ptr it = _neighbors.begin(); it != _neighbors.end(); ++it) {
       if (it->host == host) {
@@ -139,17 +141,17 @@ public:
     }
     return _neighbors.end();
   }
-
+  // 移除邻居
   virtual void remove_neighbor(neighbor_ptr neighbor_p) {
     neighbor_p->timer->enable = false;
     _neighbors.erase(neighbor_p);
   }
-
+  // 更新邻居过期计时器
   void update_timer(host_t host)  {
     auto neighbor_p = find_neighbor(host);
     if (neighbor_p != _neighbors.end()) update_neighbor_timer(neighbor_p);
   }
-
+  // 根据neighbor指针,更新邻居过期计时器
   void update_neighbor_timer(neighbor_ptr neighbor_p)  {
     if (neighbor_p->timer) neighbor_p->timer->enable = false;
     neighbor_p->timer = _timeout.add_timer(WAIT_TIMEOUT, [=]()->void{
@@ -161,13 +163,14 @@ public:
       remove_neighbor(neighbor_p);
     });
   }
-
+  // 发送路由表
   virtual void send_table(host_t host) = 0;
-
+  // 更新路由表
   virtual void update_table(host_t host, table_t table) = 0;
-
+  // 接收路由表
   virtual void receive_table(host_t host, table_t table) = 0;
-    void send_message(host_t dest, host_t router, std::string message) {
+  // 发送消息正文
+  void send_message(host_t dest, host_t router, std::string message) {
     int header_len = sizeof(rip_header);
 
     rip_header rip_h;
@@ -179,11 +182,11 @@ public:
 
     _udp.send(router.ip, router.port, data);
   }
-
+  // 转发消息
   virtual void route_message(host_t dest, std::string message) = 0;
-
+  // 接收消息
   virtual void receive_message(host_t host, std::string message) = 0;
-
+  // 发送心跳信号
   virtual void send_heart_beat(host_t dest) {
     int tot_len = sizeof(rip_header);
 
@@ -196,7 +199,7 @@ public:
 
     _udp.send(dest.ip, dest.port, data);
   }
-
+  // 接收心跳信号
   virtual void receive_heart_beat(host_t host) {
     auto neighbor_p = find_neighbor(host);
     if (neighbor_p != _neighbors.end()) {
@@ -205,20 +208,20 @@ public:
       add_neighbor(host);
     }
   }
-
+  // 获取路由表
   const table_t & get_table() const { return _table; }
-
+  // 序列化路由表
   virtual std::string stringify_table(table_t table) = 0;
-
+  // 解析路由表消息
   virtual table_t parse_table(std::string table_str) = 0;
 
 protected:
-  host_t _localhost;
-  table_t _table;
+  host_t _localhost;  // 本机主机信息
+  table_t _table;     // 路由表
   neighbor_list _neighbors;
-  Udp _udp;
-  Timeout _timeout;
-  Timeout::timer_pcb_ptr _timer;
+  Udp _udp;           // UDP实体
+  Timeout _timeout;   // 计时器工厂
+  Timeout::timer_pcb_ptr _timer; // 计时器实体
 
 };
 

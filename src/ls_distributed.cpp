@@ -1,7 +1,7 @@
 #include "ls_distributed.hpp"
 #include <iostream>
 
-// #define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 static void log(std::string message) {

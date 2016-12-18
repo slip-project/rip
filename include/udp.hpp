@@ -45,7 +45,6 @@ public:
    * @return             [调用系统默认的sendto函数的返回值]
    */
   int send(ip_t dest_ip, port_t dest_port, std::string data);
-
   /**
    * [add_listener 添加监听器方法]
    * @param  func [监听函数，测试中用的是lambda形式]
